@@ -2,15 +2,11 @@
   "name": "akazukin5151.github.io",
   "version": "1.0.0",
   "description": "",
-  "main": "t.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/akazukin5151/akazukin5151.github.io.git"
   },
-  "author": "",
+  "author": "akazukin5151",
   "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/akazukin5151/akazukin5151.github.io/issues"
