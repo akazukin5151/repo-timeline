@@ -40,11 +40,13 @@ function restructure_data(repos: Array<Repo>): Map<string, LineData> {
       if (entry) {
         entry.count += 1
         entry.repo_idxs.push(repo_idx)
+        entry.repo_names.push(repo.name)
       } else {
         line_data.set(lang_name, {
           color: lang.node.color,
           count: 1,
           repo_idxs: [repo_idx],
+          repo_names: [repo.name],
         })
       }
     }
@@ -139,7 +141,6 @@ function draw_label(svg: HTMLElement, repo: Repo, y: number) {
 function draw_lines(
   svg: HTMLElement,
   sorted: Array<[string, LineData]>,
-  repos: Array<Repo>,
   station_xs: Array<number>,
   station_ys: Array<number>
 ) {
@@ -153,31 +154,20 @@ function draw_lines(
     if (stations.length <= 1) {
       continue
     }
-    draw_line(
-      svg,
-      data.color,
-      lang_name,
-      stations,
-      station_xs,
-      station_ys,
-      coords,
-      repos
-    )
+    draw_line(svg, lang_name, data, station_xs, station_ys, coords)
   }
 }
 
 function draw_line(
   svg: HTMLElement,
-  line_color: string,
   line: string,
-  stations: Array<number>,
+  data: LineData,
   station_xs: Array<number>,
   station_ys: Array<number>,
-  coords: Map<number, number>,
-  repos: Array<Repo>
+  coords: Map<number, number>
 ) {
-  const data: Array<[number, number]> = []
-  for (const station of stations) {
+  const xy: Array<[number, number]> = []
+  for (const station of data.repo_idxs) {
     const entry = coords.get(station)
     let offset = 0
     if (entry === undefined) {
@@ -189,7 +179,7 @@ function draw_line(
     coords.set(station, offset)
     const x = station_xs[station] + offset
     const y = station_ys[station]
-    data.push([x, y])
+    xy.push([x, y])
   }
 
   // const curves = [
@@ -197,10 +187,10 @@ function draw_line(
   //   d3.curveCardinal.tension(0.5),
   //   d3.curveBumpY,
   // ]
-  const p = d3.line().curve(d3.curveCatmullRom.alpha(0.5))(data)!
+  const p = d3.line().curve(d3.curveCatmullRom.alpha(0.5))(xy)!
   const path = document.createElementNS(SVGNS, 'path')
   path.setAttribute('d', p.toString())
-  path.setAttribute('stroke', line_color)
+  path.setAttribute('stroke', data.color)
   path.setAttribute('stroke-width', '5')
   path.setAttribute('fill', 'transparent')
   const title = document.createElementNS(SVGNS, 'title')
@@ -208,15 +198,8 @@ function draw_line(
   path.appendChild(title)
   svg.appendChild(path)
 
-  for (let i = 0; i < stations.length; i++) {
-    draw_station(
-      svg,
-      data[i][0],
-      data[i][1],
-      repos[stations[i]],
-      line,
-      line_color
-    )
+  for (let i = 0; i < data.repo_idxs.length; i++) {
+    draw_station(svg, xy[i][0], xy[i][1], data.repo_names[i], line, data.color)
   }
 }
 
@@ -224,7 +207,7 @@ function draw_station(
   svg: HTMLElement,
   x: number,
   y: number,
-  repo: Repo,
+  repo_name: string,
   line: string,
   line_color: string
 ) {
@@ -236,8 +219,9 @@ function draw_station(
   circle.setAttribute('stroke-width', '2')
   circle.setAttribute('fill', 'white')
 
+  // TODO: hover will trigger on bounding box of line, not on line itself
   const title = document.createElementNS(SVGNS, 'title')
-  title.textContent = `${line} - ${repo.name}`
+  title.textContent = `${line} - ${repo_name}`
   circle.appendChild(title)
 
   svg.appendChild(circle)
@@ -276,7 +260,7 @@ fetch('./new.json')
 
     draw_vertical_gridlines(svg, n_lines)
 
-    draw_lines(svg, sorted, repos, station_xs, station_ys)
+    draw_lines(svg, sorted, station_xs, station_ys)
 
     if (RENDER_TABLE) {
       render_table(distributed, repos)

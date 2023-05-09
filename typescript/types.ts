@@ -28,4 +28,5 @@ export type LineData = {
   color: string
   count: number
   repo_idxs: Array<number>
+  repo_names: Array<string>
 }
