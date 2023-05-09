@@ -212,11 +212,6 @@ function calc_stations_by_line(
       for (const lang of repo.languages.edges) {
         // if station is on line
         if (lang.node.name === lang_name) {
-          // const e = coords.get(repo_idx)
-          // if (e === undefined) {
-          //   coords.set(repo_idx, [0])
-          // }
-
           const entry = stations_by_line.get(lang_name)
           if (entry) {
             entry.push(repo_idx)
