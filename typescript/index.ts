@@ -3,6 +3,7 @@ import { Repo, LineData, Schema } from './types'
 import { MULTIPLIER } from './constants'
 import { render_table } from './table'
 
+const LINEAR = false
 const RENDER_TABLE = false
 // const curves = [
 //   d3.curveCatmullRom.alpha(0.5),
@@ -122,12 +123,14 @@ function draw_lines(
   // if station is already in the map, add an offset to the xcoord
   const coords: Map<number, number> = new Map()
 
+  let i = 0
   for (const [lang_name, data] of sorted) {
     const stations = data.repo_idxs
     if (stations.length <= 1) {
       continue
     }
-    draw_line(svg, lang_name, data, station_xs, station_ys, coords)
+    draw_line(svg, lang_name, data, station_xs, station_ys, coords, i)
+    i += 1
   }
 }
 
@@ -147,14 +150,15 @@ function draw_line(
   data: LineData,
   station_xs: Array<number>,
   station_ys: Array<number>,
-  coords: Map<number, number>
+  coords: Map<number, number>,
+  i: number
 ) {
   const xy: Array<[number, number]> = []
   for (const station of data.repo_idxs) {
     const entry = coords.get(station)
     const offset = calc_offset(entry)
     coords.set(station, offset)
-    const x = station_xs[station] + offset
+    const x = LINEAR ? x_pos(i) : station_xs[station] + offset
     const y = station_ys[station]
     xy.push([x, y])
   }
@@ -230,7 +234,7 @@ fetch('./new.json')
 
     draw_vertical_gridlines(svg, n_lines)
 
-    draw_lines(svg, sorted, station_xs, station_ys)
+    draw_lines(svg, LINEAR ? distributed : sorted, station_xs, station_ys)
 
     if (RENDER_TABLE) {
       render_table(distributed, repos)
