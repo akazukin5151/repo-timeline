@@ -23,7 +23,6 @@ distribute stations as usual
 force lines starting on the left of the trunk, to always remain on the left
 same for the right
 
-
 identify lines that share few stations with the trunk,
 these can be perpendicular to it
 identify stations with many lines, these are main interchange stations
