@@ -128,15 +128,14 @@ function draw_label(svg: HTMLElement, repo: Repo, y: number) {
   const text = document.createElementNS(SVGNS, 'text')
   text.setAttribute('x', '10')
   text.setAttribute('y', (y - 5).toString())
-  text.setAttribute('font-size', '12')
-  text.setAttribute('font-family', 'sans-serif')
+  text.setAttribute('class', 'label')
   text.innerHTML = repo.name
   svg.appendChild(text)
 
   const line = document.createElementNS(SVGNS, 'path')
   const width = svg.getAttribute('width')
   line.setAttribute('d', `M 10 ${y} L ${width} ${y}`)
-  line.setAttribute('stroke', '#cccccc')
+  line.setAttribute('class', 'gridline')
   svg.appendChild(line)
 }
 
@@ -193,8 +192,7 @@ function draw_line(
   const path = document.createElementNS(SVGNS, 'path')
   path.setAttribute('d', p.toString())
   path.setAttribute('stroke', data.color)
-  path.setAttribute('stroke-width', '5')
-  path.setAttribute('fill', 'transparent')
+  path.setAttribute('class', 'line')
   const title = document.createElementNS(SVGNS, 'title')
   title.textContent = line
   path.appendChild(title)
@@ -218,8 +216,7 @@ function draw_station(
   circle.setAttribute('cy', y.toString())
   circle.setAttribute('r', '5')
   circle.setAttribute('stroke', line_color)
-  circle.setAttribute('stroke-width', '2')
-  circle.setAttribute('fill', 'white')
+  circle.setAttribute('class', 'station')
 
   // TODO: hover will trigger on bounding box of line, not on line itself
   const title = document.createElementNS(SVGNS, 'title')
@@ -275,7 +272,7 @@ function draw_vertical_gridlines(svg: HTMLElement, n_lines: number) {
     const line = document.createElementNS(SVGNS, 'path')
     const x = x_pos(i)
     line.setAttribute('d', `M ${x},0 L ${x},${height}`)
-    line.setAttribute('stroke', '#ccc')
+    line.setAttribute('class', 'gridline')
     svg.appendChild(line)
   }
 }
