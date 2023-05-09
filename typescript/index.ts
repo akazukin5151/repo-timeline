@@ -3,13 +3,11 @@ import { Repo, LineData, Schema } from './types'
 import { MULTIPLIER } from './constants'
 import { render_table } from './table'
 
-const LINEAR = false
-const RENDER_TABLE = false
-// const curves = [
-//   d3.curveCatmullRom.alpha(0.5),
-//   d3.curveCardinal.tension(0.5),
-//   d3.curveBumpY,
-// ]
+const LINEAR: boolean = false
+const RENDER_TABLE: boolean = false
+const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly = d3.curveCatmullRom.alpha(0.5)
+// d3.curveCardinal.tension(0.5)
+// d3.curveBumpY
 
 const SVGNS = 'http://www.w3.org/2000/svg'
 
@@ -163,7 +161,7 @@ function draw_line(
     xy.push([x, y])
   }
 
-  const p = d3.line().curve(d3.curveCatmullRom.alpha(0.5))(xy)!
+  const p = d3.line().curve(CURVE)(xy)!
   const path = document.createElementNS(SVGNS, 'path')
   path.setAttribute('d', p.toString())
   path.setAttribute('stroke', data.color)
