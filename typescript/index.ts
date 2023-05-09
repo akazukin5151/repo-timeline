@@ -70,10 +70,7 @@ function x_pos(col_idx: number): number {
   return 230 + col_idx * 60
 }
 
-function setup_svg(
-  repos: Array<Repo>,
-  n_stations: number,
-): HTMLElement {
+function setup_svg(repos: Array<Repo>, n_stations: number): HTMLElement {
   const svg = document.getElementById('svg') as HTMLElement
   svg.setAttribute('height', (y_pos(repos.length - 1) + 40).toString())
   svg.setAttribute('width', (x_pos(n_stations - 1) + 20).toString())
@@ -287,11 +284,7 @@ fetch('./new.json')
     for (let row_idx = 0; row_idx < repos.length; row_idx++) {
       const repo = repos[row_idx]
 
-      const station_col_idx = find_station_x_pos_idx(
-        sorted,
-        distributed,
-        repo
-      )!
+      const station_col_idx = find_station_x_pos_idx(sorted, distributed, repo)!
       station_xs.push(x_pos(station_col_idx))
 
       const y = y_pos(row_idx)

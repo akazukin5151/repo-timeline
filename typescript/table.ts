@@ -1,7 +1,10 @@
-import { MULTIPLIER } from "./constants"
-import { Repo, RepoData } from "./types"
+import { MULTIPLIER } from './constants'
+import { Repo, RepoData } from './types'
 
-export function render_table(distributed: Array<[string, RepoData]>, repos: Array<Repo>) {
+export function render_table(
+  distributed: Array<[string, RepoData]>,
+  repos: Array<Repo>
+) {
   const tbody = document.getElementById('tbody')!
   add_lang_cols(distributed)
   for (const repo of repos) {
@@ -89,4 +92,3 @@ function calc_offset(nth_station: number): number {
   }
   return -nth_station * MULTIPLIER
 }
-
