@@ -27,6 +27,11 @@ import { MULTIPLIER } from './constants'
 import { render_table } from './table'
 
 const RENDER_TABLE = false
+// const curves = [
+//   d3.curveCatmullRom.alpha(0.5),
+//   d3.curveCardinal.tension(0.5),
+//   d3.curveBumpY,
+// ]
 
 const SVGNS = 'http://www.w3.org/2000/svg'
 
@@ -90,7 +95,6 @@ function setup_svg(n_stations: number, n_lines: number): HTMLElement {
 
 function find_station_x_pos_idx(
   sorted: Array<[string, LineData]>,
-  distributed: Array<[string, LineData]>,
   repo: Repo
 ): number | undefined {
   // find the most frequent repo for this station
@@ -102,26 +106,17 @@ function find_station_x_pos_idx(
     }
     return false
   })
+
   // find that repo's corresponding position when the repos were distributed
-  for (let i = 0; i < distributed.length; i++) {
-    if (distributed[i] === sorted[sorted_idx]) {
-      return i
-    }
+  // all even numbers are on the right of zero
+  // with a magnitude of sorted_idx / 2
+  // all odd numbers are on the left of zero
+  // with a magnitude of ceil(sorted_idx / 2)
+  const idx_of_zero = Math.floor(sorted.length / 2)
+  if (sorted_idx % 2 === 0) {
+    return idx_of_zero + sorted_idx / 2
   }
-  // const idx_of_zero = Math.ceil(sorted.length / 2)
-  // if (sorted_idx % 2 === 0) {
-  //   return idx_of_zero - (sorted_idx - 1)
-  // }
-  // idx_of_zero + (sorted_idx - 1)
-  // // 0 1 2 3 4
-  // // 0 1 2 3 4
-  // // look for 3
-  // // 2 is even, so start from 0 and go to the left by (2 - 1) = 1 position
-  // // 3 is odd, so start from 0 and go to the right by (3 - 1) = 2 positions
-  // // 3 1 0 2 4
-  // //
-  // // 5 3 1 0 2 4
-  // return sorted_idx / 2
+  return idx_of_zero - Math.ceil(sorted_idx / 2)
 }
 
 function draw_label(svg: HTMLElement, repo: Repo, y: number) {
@@ -183,11 +178,6 @@ function draw_line(
     xy.push([x, y])
   }
 
-  // const curves = [
-  //   d3.curveCatmullRom.alpha(0.5),
-  //   d3.curveCardinal.tension(0.5),
-  //   d3.curveBumpY,
-  // ]
   const p = d3.line().curve(d3.curveCatmullRom.alpha(0.5))(xy)!
   const path = document.createElementNS(SVGNS, 'path')
   path.setAttribute('d', p.toString())
@@ -249,7 +239,7 @@ fetch('./new.json')
     for (let row_idx = 0; row_idx < repos.length; row_idx++) {
       const repo = repos[row_idx]
 
-      const station_col_idx = find_station_x_pos_idx(sorted, distributed, repo)!
+      const station_col_idx = find_station_x_pos_idx(sorted, repo)!
       station_xs.push(x_pos(station_col_idx))
 
       const y = y_pos(row_idx)
