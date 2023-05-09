@@ -77,9 +77,9 @@ function x_pos(col_idx: number): number {
   return 230 + col_idx * 60
 }
 
-function setup_svg(repos: Array<Repo>, n_lines: number): HTMLElement {
+function setup_svg(n_stations: number, n_lines: number): HTMLElement {
   const svg = document.getElementById('svg') as HTMLElement
-  svg.setAttribute('height', (y_pos(repos.length - 1) + 40).toString())
+  svg.setAttribute('height', (y_pos(n_stations - 1) + 40).toString())
   svg.setAttribute('width', (x_pos(n_lines - 1) + 20).toString())
   return svg
 }
@@ -252,6 +252,7 @@ fetch('./new.json')
       (repo) => repo.languages.edges.length > 0
     )
     const line_data = restructure_data(repos)
+    const n_stations = repos.length
     const n_lines = line_data.size
 
     const sorted = Array.from(line_data)
@@ -259,7 +260,7 @@ fetch('./new.json')
       .sort(([_, a], [__, b]) => b.count - a.count)
     const distributed = distribute_lines(sorted)
 
-    const svg = setup_svg(repos, n_lines)
+    const svg = setup_svg(n_stations, n_lines)
 
     const station_xs = []
     const station_ys = []
