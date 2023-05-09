@@ -294,15 +294,7 @@ fetch('./new.json')
 
     const stations_by_line = calc_stations_by_line(repos, sorted)
 
-    const height = svg.getAttribute('height')
-
-    for (let i = 0; i < n_stations; i++) {
-      const line = document.createElementNS(SVGNS, 'path')
-      const x = x_pos(i)
-      line.setAttribute('d', `M ${x},0 L ${x},${height}`)
-      line.setAttribute('stroke', '#ccc')
-      svg.appendChild(line)
-    }
+    draw_vertical_gridlines(svg, n_stations)
 
     draw_lines(svg, stations_by_line, repos, repo_data, station_xs, station_ys)
 
@@ -310,3 +302,14 @@ fetch('./new.json')
       render_table(distributed, repos)
     }
   })
+
+function draw_vertical_gridlines(svg: HTMLElement, n_stations: number) {
+  const height = svg.getAttribute('height')
+  for (let i = 0; i < n_stations; i++) {
+    const line = document.createElementNS(SVGNS, 'path')
+    const x = x_pos(i)
+    line.setAttribute('d', `M ${x},0 L ${x},${height}`)
+    line.setAttribute('stroke', '#ccc')
+    svg.appendChild(line)
+  }
+}
