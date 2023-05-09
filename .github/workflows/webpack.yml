@@ -8,6 +8,11 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,6 +33,12 @@ jobs:
       run: |
         npm install
         npx webpack --mode=production
+
+    - name: Copy
+      run: |
+        cp index.html dist/
+        mkdir -p dist/dist/
+        mv dist/bundle.js dist/dist/bundle.js
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v1
