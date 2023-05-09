@@ -30,19 +30,32 @@ const RENDER_TABLE = false
 
 const SVGNS = 'http://www.w3.org/2000/svg'
 
-function collect_colors_and_count(repos: Array<Repo>): Map<string, RepoData> {
-  const repo_data = new Map()
-  for (const repo of repos) {
+function collect_colors_and_count(repos: Array<Repo>): {
+  repo_data: Map<string, RepoData>
+  lang_to_repo_idx: Map<string, Array<number>>
+} {
+  const repo_data = new Map() // given a lang, get the color
+  const lang_to_repo_idx = new Map() // given a lang, get the repo idx
+  for (let repo_idx = 0; repo_idx < repos.length; repo_idx++) {
+    const repo = repos[repo_idx]
     for (const lang of repo.languages.edges) {
-      const d = repo_data.get(lang.node.name)
+      const lang_name = lang.node.name
+      const entry = lang_to_repo_idx.get(lang_name)
+      if (entry) {
+        entry.push(repo_idx)
+      } else {
+        lang_to_repo_idx.set(lang_name, [repo_idx])
+      }
+
+      const d = repo_data.get(lang_name)
       if (d) {
         d.count += 1
       } else {
-        repo_data.set(lang.node.name, { color: lang.node.color, count: 1 })
+        repo_data.set(lang_name, { color: lang.node.color, count: 1 })
       }
     }
   }
-  return repo_data
+  return { repo_data, lang_to_repo_idx }
 }
 
 // put the most frequent in the center, and add subsequent langs on the right and left, alternating
@@ -129,33 +142,9 @@ function draw_label(svg: HTMLElement, repo: Repo, y: number) {
   svg.appendChild(line)
 }
 
-function calc_stations_by_line(
-  repos: Array<Repo>,
-  sorted: Array<[string, RepoData]>
-): Map<string, Array<number>> {
-  const stations_by_line = new Map()
-  // for every line
-  for (const [lang_name, _] of sorted) {
-    for (let repo_idx = 0; repo_idx < repos.length; repo_idx++) {
-      const repo = repos[repo_idx]
-      for (const lang of repo.languages.edges) {
-        // if station is on line
-        if (lang.node.name === lang_name) {
-          const entry = stations_by_line.get(lang_name)
-          if (entry) {
-            entry.push(repo_idx)
-          } else {
-            stations_by_line.set(lang_name, [repo_idx])
-          }
-        }
-      }
-    }
-  }
-  return stations_by_line
-}
-
 function draw_lines(
   svg: HTMLElement,
+  sorted: Array<[string, RepoData]>,
   stations_by_line: Map<string, Array<number>>,
   repos: Array<Repo>,
   repo_data: Map<string, RepoData>,
@@ -167,15 +156,16 @@ function draw_lines(
   // if station is already in the map, add an offset to the xcoord
   const coords: Map<number, number> = new Map()
 
-  for (const [line, stations] of stations_by_line) {
+  for (const [lang_name, _] of sorted) {
+    const stations = stations_by_line.get(lang_name)!
     if (stations.length <= 1) {
       continue
     }
-    const line_color = repo_data.get(line)!.color
+    const line_color = repo_data.get(lang_name)!.color
     draw_line(
       svg,
       line_color,
-      line,
+      lang_name,
       stations,
       station_xs,
       station_ys,
@@ -268,7 +258,7 @@ fetch('./new.json')
     const repos = j.data.user.repositories.nodes.filter(
       (repo) => repo.languages.edges.length > 0
     )
-    const repo_data = collect_colors_and_count(repos)
+    const { repo_data, lang_to_repo_idx } = collect_colors_and_count(repos)
     const n_stations = repo_data.size
 
     const sorted = Array.from(repo_data)
@@ -292,11 +282,19 @@ fetch('./new.json')
       draw_label(svg, repo, y)
     }
 
-    const stations_by_line = calc_stations_by_line(repos, sorted)
+    // const stations_by_line = calc_stations_by_line(repos, sorted)
 
     draw_vertical_gridlines(svg, n_stations)
 
-    draw_lines(svg, stations_by_line, repos, repo_data, station_xs, station_ys)
+    draw_lines(
+      svg,
+      sorted,
+      lang_to_repo_idx,
+      repos,
+      repo_data,
+      station_xs,
+      station_ys
+    )
 
     if (RENDER_TABLE) {
       render_table(distributed, repos)
