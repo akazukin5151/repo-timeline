@@ -27,4 +27,5 @@ export type Language = {
 export type RepoData = {
   color: string
   count: number
+  repo_idxs: Array<number>
 }
