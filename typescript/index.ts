@@ -25,7 +25,7 @@ import * as d3 from 'd3-shape'
 import { Repo, RepoData, Schema } from './types'
 
 const LINEAR = false
-const RENDER_TABLE = true
+const RENDER_TABLE = false
 
 const SVGNS = 'http://www.w3.org/2000/svg'
 const MULTIPLIER = 10
@@ -398,8 +398,6 @@ fetch('./new.json')
 
     const stations_by_line = calc_stations_by_line(repos, distributed)
 
-    draw_lines(svg, stations_by_line, repos, repo_data, station_xs, station_ys)
-
     const height = svg.getAttribute('height')
 
     for (let i = 0; i < distributed.length; i++) {
@@ -410,14 +408,6 @@ fetch('./new.json')
       svg.appendChild(line)
     }
 
-    // const ao = Array.from(line_offsets.values())
-    // const maxo = ao.reduce((a, b) => a > b ? a : b)
-    // const mino = ao.reduce((a, b) => a < b ? a : b)
-    // const rect = document.createElementNS(SVGNS, 'rect')
-    // rect.setAttribute('x', x_pos(1).toString())
-    // rect.setAttribute('y', '0')
-    // rect.setAttribute('width', (maxo - mino).toString())
-    // rect.setAttribute('height', height!.toString())
-    // rect.setAttribute('fill', '#cccccc33')
-    // svg.appendChild(rect)
+    draw_lines(svg, stations_by_line, repos, repo_data, station_xs, station_ys)
+
   })
