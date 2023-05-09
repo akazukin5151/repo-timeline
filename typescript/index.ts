@@ -16,8 +16,7 @@ function restructure_data(
   repos: ReadonlyArray<Repo>
 ): ReadonlyMap<string, LineData> {
   const line_data = new Map()
-  for (let repo_idx = 0; repo_idx < repos.length; repo_idx++) {
-    const repo = repos[repo_idx]!
+  repos.forEach((repo, repo_idx) => {
     for (const lang of repo.languages.edges) {
       const lang_name = lang.node.name
       const entry = line_data.get(lang_name)
@@ -34,7 +33,7 @@ function restructure_data(
         })
       }
     }
-  }
+  })
   return line_data
 }
 
@@ -44,14 +43,14 @@ function restructure_data(
 function distribute_lines(
   sorted: ReadonlyArray<[string, LineData]>
 ): ReadonlyArray<[string, LineData]> {
-  const distributed = []
-  for (let i = 0; i < sorted.length; i++) {
+  const distributed: Array<[string, LineData]> = []
+  sorted.forEach((item, i) => {
     if (i % 2 === 0) {
-      distributed.push(sorted[i]!)
+      distributed.push(item)
     } else {
-      distributed.unshift(sorted[i]!)
+      distributed.unshift(item)
     }
-  }
+  })
   return distributed
 }
 
@@ -174,7 +173,7 @@ function draw_line(
   path.appendChild(title)
   svg.appendChild(path)
 
-  for (let i = 0; i < data.repo_idxs.length; i++) {
+  data.repo_idxs.forEach((_, i) => {
     draw_station(
       svg,
       xy[i]![0],
@@ -183,7 +182,7 @@ function draw_line(
       line,
       data.color
     )
-  }
+  })
 }
 
 function draw_station(
@@ -226,19 +225,17 @@ fetch('./new.json')
 
     const svg = setup_svg(n_stations, n_lines)
 
-    const station_xs = []
-    const station_ys = []
+    const station_xs: Array<number> = []
+    const station_ys: Array<number> = []
 
-    for (let row_idx = 0; row_idx < repos.length; row_idx++) {
-      const repo = repos[row_idx]
-
+    repos.forEach((repo, row_idx) => {
       const station_col_idx = find_station_x_pos_idx(sorted, repo!)!
       station_xs.push(x_pos(station_col_idx))
 
       const y = y_pos(row_idx)
       station_ys.push(y)
       draw_label(svg, repo!, y)
-    }
+    })
 
     draw_vertical_gridlines(svg, n_lines)
 
