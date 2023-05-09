@@ -131,6 +131,16 @@ function draw_lines(
   }
 }
 
+function calc_offset(entry: number | undefined): number {
+  if (entry === undefined) {
+    return 0
+  } else if (entry < 0) {
+    return Math.abs(entry) + MULTIPLIER
+  } else {
+    return entry * -1 - MULTIPLIER
+  }
+}
+
 function draw_line(
   svg: HTMLElement,
   line: string,
@@ -142,13 +152,7 @@ function draw_line(
   const xy: Array<[number, number]> = []
   for (const station of data.repo_idxs) {
     const entry = coords.get(station)
-    let offset = 0
-    if (entry === undefined) {
-    } else if (entry < 0) {
-      offset = Math.abs(entry) + MULTIPLIER
-    } else {
-      offset = entry * -1 - MULTIPLIER
-    }
+    const offset = calc_offset(entry)
     coords.set(station, offset)
     const x = station_xs[station] + offset
     const y = station_ys[station]
