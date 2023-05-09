@@ -22,7 +22,7 @@
 // intersection
 // or at least, not cross the main trunk without an intersection
 import * as d3 from 'd3-shape'
-import { Repo, RepoData, Schema } from './types'
+import { Repo, LineData, Schema } from './types'
 import { MULTIPLIER } from './constants'
 import { render_table } from './table'
 
@@ -30,18 +30,18 @@ const RENDER_TABLE = false
 
 const SVGNS = 'http://www.w3.org/2000/svg'
 
-function restructure_data(repos: Array<Repo>): Map<string, RepoData> {
-  const repo_data = new Map() // given a lang, get the color
+function restructure_data(repos: Array<Repo>): Map<string, LineData> {
+  const line_data = new Map() // given a lang, get the color
   for (let repo_idx = 0; repo_idx < repos.length; repo_idx++) {
     const repo = repos[repo_idx]
     for (const lang of repo.languages.edges) {
       const lang_name = lang.node.name
-      const entry = repo_data.get(lang_name)
+      const entry = line_data.get(lang_name)
       if (entry) {
         entry.count += 1
         entry.repo_idxs.push(repo_idx)
       } else {
-        repo_data.set(lang_name, {
+        line_data.set(lang_name, {
           color: lang.node.color,
           count: 1,
           repo_idxs: [repo_idx],
@@ -49,15 +49,15 @@ function restructure_data(repos: Array<Repo>): Map<string, RepoData> {
       }
     }
   }
-  return repo_data
+  return line_data
 }
 
 // put the most frequent in the center, and add subsequent langs on the right and left, alternating
 // (even on the center/right, odd on the left. zero is even and is the only even
 // on the center)
 function distribute_lines(
-  sorted: Array<[string, RepoData]>
-): Array<[string, RepoData]> {
+  sorted: Array<[string, LineData]>
+): Array<[string, LineData]> {
   const distributed = []
   for (let i = 0; i < sorted.length; i++) {
     if (i % 2 === 0) {
@@ -85,8 +85,8 @@ function setup_svg(repos: Array<Repo>, n_stations: number): HTMLElement {
 }
 
 function find_station_x_pos_idx(
-  sorted: Array<[string, RepoData]>,
-  distributed: Array<[string, RepoData]>,
+  sorted: Array<[string, LineData]>,
+  distributed: Array<[string, LineData]>,
   repo: Repo
 ): number | undefined {
   // find the most frequent repo for this station
@@ -138,9 +138,9 @@ function draw_label(svg: HTMLElement, repo: Repo, y: number) {
 
 function draw_lines(
   svg: HTMLElement,
-  sorted: Array<[string, RepoData]>,
+  sorted: Array<[string, LineData]>,
   repos: Array<Repo>,
-  repo_data: Map<string, RepoData>,
+  line_data: Map<string, LineData>,
   station_xs: Array<number>,
   station_ys: Array<number>
 ) {
@@ -154,7 +154,7 @@ function draw_lines(
     if (stations.length <= 1) {
       continue
     }
-    const line_color = repo_data.get(lang_name)!.color
+    const line_color = line_data.get(lang_name)!.color
     draw_line(
       svg,
       line_color,
@@ -251,10 +251,10 @@ fetch('./new.json')
     const repos = j.data.user.repositories.nodes.filter(
       (repo) => repo.languages.edges.length > 0
     )
-    const repo_data = restructure_data(repos)
-    const n_stations = repo_data.size
+    const line_data = restructure_data(repos)
+    const n_stations = line_data.size
 
-    const sorted = Array.from(repo_data)
+    const sorted = Array.from(line_data)
       .filter((x) => x[1].count > 1)
       .sort(([_, a], [__, b]) => b.count - a.count)
     const distributed = distribute_lines(sorted)
@@ -277,7 +277,7 @@ fetch('./new.json')
 
     draw_vertical_gridlines(svg, n_stations)
 
-    draw_lines(svg, sorted, repos, repo_data, station_xs, station_ys)
+    draw_lines(svg, sorted, repos, line_data, station_xs, station_ys)
 
     if (RENDER_TABLE) {
       render_table(distributed, repos)

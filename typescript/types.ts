@@ -24,7 +24,7 @@ export type Language = {
   }
 }
 
-export type RepoData = {
+export type LineData = {
   color: string
   count: number
   repo_idxs: Array<number>

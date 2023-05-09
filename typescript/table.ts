@@ -1,8 +1,8 @@
 import { MULTIPLIER } from './constants'
-import { Repo, RepoData } from './types'
+import { Repo, LineData } from './types'
 
 export function render_table(
-  distributed: Array<[string, RepoData]>,
+  distributed: Array<[string, LineData]>,
   repos: Array<Repo>
 ) {
   const tbody = document.getElementById('tbody')!
@@ -15,7 +15,7 @@ export function render_table(
   }
 }
 
-function add_lang_cols(distributed: Array<[string, RepoData]>): void {
+function add_lang_cols(distributed: Array<[string, LineData]>): void {
   const thead = document.getElementById('thead')!
   const row = document.createElement('tr')
   const th = document.createElement('th')
@@ -48,7 +48,7 @@ function add_repo_row(repo: Repo): HTMLTableRowElement {
 }
 
 function add_cols_for_row(
-  distributed: Array<[string, RepoData]>,
+  distributed: Array<[string, LineData]>,
   repo: Repo,
   row: HTMLTableRowElement
 ) {
