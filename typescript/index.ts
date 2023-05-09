@@ -13,7 +13,7 @@ const RENDER_TABLE = false
 const SVGNS = 'http://www.w3.org/2000/svg'
 
 function restructure_data(repos: Array<Repo>): Map<string, LineData> {
-  const line_data = new Map() // given a lang, get the color
+  const line_data = new Map()
   for (let repo_idx = 0; repo_idx < repos.length; repo_idx++) {
     const repo = repos[repo_idx]
     for (const lang of repo.languages.edges) {
