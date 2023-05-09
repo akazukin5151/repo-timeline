@@ -24,7 +24,6 @@
 import * as d3 from 'd3-shape'
 import { Repo, RepoData, Schema } from './types'
 
-const LINEAR = false
 const RENDER_TABLE = false
 
 const SVGNS = 'http://www.w3.org/2000/svg'
@@ -375,16 +374,13 @@ fetch('./new.json')
     for (let row_idx = 0; row_idx < repos.length; row_idx++) {
       const repo = repos[row_idx]
 
-      if (LINEAR) {
-        station_xs.push(350)
-      } else {
-        const station_col_idx = find_station_x_pos_idx(
-          sorted,
-          distributed,
-          repo
-        )!
-        station_xs.push(x_pos(station_col_idx))
-      }
+      const station_col_idx = find_station_x_pos_idx(
+        sorted,
+        distributed,
+        repo
+      )!
+      station_xs.push(x_pos(station_col_idx))
+
       const y = y_pos(row_idx)
       station_ys.push(y)
       draw_label(svg, repo, y)
