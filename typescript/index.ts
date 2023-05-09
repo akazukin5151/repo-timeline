@@ -25,9 +25,10 @@ import * as d3 from 'd3-shape'
 import { Repo, RepoData, Schema } from './types'
 
 const LINEAR = false
-const RENDER_TABLE = false
+const RENDER_TABLE = true
 
 const SVGNS = 'http://www.w3.org/2000/svg'
+const MULTIPLIER = 10
 
 function collect_colors_and_count(repos: Array<Repo>): Map<string, RepoData> {
   const repo_data = new Map()
@@ -72,6 +73,16 @@ function add_lang_cols(distributed: Array<[string, RepoData]>): void {
     th.style.color = data.color
     row.appendChild(th)
   }
+  {
+    const th = document.createElement('th')
+    th.innerText = 'sum'
+    row.appendChild(th)
+  }
+  {
+    const th = document.createElement('th')
+    th.innerText = 'offsets'
+    row.appendChild(th)
+  }
   thead.appendChild(row)
 }
 
@@ -80,7 +91,7 @@ function y_pos(row_idx: number): number {
 }
 
 function x_pos(col_idx: number): number {
-  return 150 + col_idx * 25
+  return 230 + col_idx * 60
 }
 
 function setup_svg(
@@ -153,18 +164,39 @@ function draw_label(svg: HTMLElement, repo: Repo, y: number) {
   svg.appendChild(line)
 }
 
-function add_cols_for_row(distributed: Array<[string, RepoData]>, repo: Repo, row: HTMLTableRowElement) {
+function add_cols_for_row(
+  distributed: Array<[string, RepoData]>,
+  repo: Repo,
+  row: HTMLTableRowElement
+) {
+  let count = 0
   for (let col_idx = 0; col_idx < distributed.length; col_idx++) {
     const [lang_col, data] = distributed[col_idx]
     const td = document.createElement('td')
 
     for (const repo_lang of repo.languages.edges) {
       if (repo_lang.node.name === lang_col) {
+        count += 1
         td.innerText = 'x'
         td.style.color = data.color
         break
       }
     }
+    row.appendChild(td)
+  }
+  {
+    const td = document.createElement('td')
+    td.innerText = count.toString()
+    row.appendChild(td)
+  }
+  {
+    const td = document.createElement('td')
+    let text = ''
+    for (let i = 0; i < count; i++) {
+      const offset = calc_offset(i)
+      text += offset.toString() + ', '
+    }
+    td.innerText = text
     row.appendChild(td)
   }
 }
@@ -181,6 +213,11 @@ function calc_stations_by_line(
       for (const lang of repo.languages.edges) {
         // if station is on line
         if (lang.node.name === lang_name) {
+          // const e = coords.get(repo_idx)
+          // if (e === undefined) {
+          //   coords.set(repo_idx, [0])
+          // }
+
           const entry = stations_by_line.get(lang_name)
           if (entry) {
             entry.push(repo_idx)
@@ -194,20 +231,13 @@ function calc_stations_by_line(
   return stations_by_line
 }
 
-function calc_line_offsets(
-  sorted: Array<[string, RepoData]>
-): Map<string, number> {
-  const multiplier = LINEAR ? 10 : 4
-  const line_offsets = new Map()
-  for (let i = 0; i < sorted.length; i++) {
-    const name = sorted[i][0]
-    if (i % 2 === 0) {
-      line_offsets.set(name, i * multiplier)
-    } else {
-      line_offsets.set(name, -i * multiplier)
-    }
+// offset a station's position, if there are already n stations on the row
+// only used for table
+function calc_offset(nth_station: number): number {
+  if (nth_station % 2 === 0) {
+    return nth_station * MULTIPLIER
   }
-  return line_offsets
+  return -nth_station * MULTIPLIER
 }
 
 function draw_lines(
@@ -216,25 +246,27 @@ function draw_lines(
   repos: Array<Repo>,
   repo_data: Map<string, RepoData>,
   station_xs: Array<number>,
-  station_ys: Array<number>,
-  line_offsets: Map<string, number>
+  station_ys: Array<number>
 ) {
+  // iterate through every station in order of plot (every line -> every station on line)
+  // add station to a map, values are x coord
+  // if station is already in the map, add an offset to the xcoord
+  const coords: Map<number, number> = new Map()
+
   for (const [line, stations] of stations_by_line) {
     if (stations.length <= 1) {
       continue
     }
-    const offset = line_offsets.get(line)!
     const line_color = repo_data.get(line)!.color
-    draw_line(svg, line_color, line, offset, stations, station_xs, station_ys)
-    draw_stations(
-      stations,
+    draw_line(
       svg,
+      line_color,
       line,
-      repos,
+      stations,
       station_xs,
       station_ys,
-      offset,
-      line_color
+      coords,
+      repos
     )
   }
 }
@@ -243,13 +275,23 @@ function draw_line(
   svg: HTMLElement,
   line_color: string,
   line: string,
-  offset: number,
   stations: Array<number>,
   station_xs: Array<number>,
-  station_ys: Array<number>
+  station_ys: Array<number>,
+  coords: Map<number, number>,
+  repos: Array<Repo>
 ) {
   const data: Array<[number, number]> = []
   for (const station of stations) {
+    const entry = coords.get(station)
+    let offset = 0
+    if (entry === undefined) {
+    } else if (entry < 0) {
+      offset = Math.abs(entry) + MULTIPLIER
+    } else {
+      offset = entry * -1 - MULTIPLIER
+    }
+    coords.set(station, offset)
     const x = station_xs[station] + offset
     const y = station_ys[station]
     data.push([x, y])
@@ -270,36 +312,40 @@ function draw_line(
   title.textContent = line
   path.appendChild(title)
   svg.appendChild(path)
+
+  for (let i = 0; i < stations.length; i++) {
+    draw_station(
+      svg,
+      data[i][0],
+      data[i][1],
+      repos[stations[i]],
+      line,
+      line_color
+    )
+  }
 }
 
-function draw_stations(
-  stations: Array<number>,
+function draw_station(
   svg: HTMLElement,
+  x: number,
+  y: number,
+  repo: Repo,
   line: string,
-  repos: Array<Repo>,
-  station_xs: Array<number>,
-  station_ys: Array<number>,
-  offset: number,
   line_color: string
 ) {
-  // draw stations on line
-  for (const station of stations) {
-    const circle = document.createElementNS(SVGNS, 'circle')
-    const x = station_xs[station] + offset
-    const y = station_ys[station]
-    circle.setAttribute('cx', x.toString())
-    circle.setAttribute('cy', y.toString())
-    circle.setAttribute('r', '5')
-    circle.setAttribute('stroke', line_color)
-    circle.setAttribute('stroke-width', '2')
-    circle.setAttribute('fill', 'white')
+  const circle = document.createElementNS(SVGNS, 'circle')
+  circle.setAttribute('cx', x.toString())
+  circle.setAttribute('cy', y.toString())
+  circle.setAttribute('r', '5')
+  circle.setAttribute('stroke', line_color)
+  circle.setAttribute('stroke-width', '2')
+  circle.setAttribute('fill', 'white')
 
-    const title = document.createElementNS(SVGNS, 'title')
-    title.textContent = `${line} - ${repos[station].name}`
-    circle.appendChild(title)
+  const title = document.createElementNS(SVGNS, 'title')
+  title.textContent = `${line} - ${repo.name}`
+  circle.appendChild(title)
 
-    svg.appendChild(circle)
-  }
+  svg.appendChild(circle)
 }
 
 fetch('./new.json')
@@ -311,9 +357,9 @@ fetch('./new.json')
     )
     const repo_data = collect_colors_and_count(repos)
 
-    const sorted = Array.from(repo_data).sort(
-      ([_, a], [__, b]) => b.count - a.count
-    )
+    const sorted = Array.from(repo_data)
+      .filter((x) => x[1].count > 1)
+      .sort(([_, a], [__, b]) => b.count - a.count)
     const distributed = distribute_lines(sorted)
 
     if (RENDER_TABLE) {
@@ -351,15 +397,27 @@ fetch('./new.json')
     }
 
     const stations_by_line = calc_stations_by_line(repos, distributed)
-    const line_offsets = calc_line_offsets(sorted)
 
-    draw_lines(
-      svg,
-      stations_by_line,
-      repos,
-      repo_data,
-      station_xs,
-      station_ys,
-      line_offsets
-    )
+    draw_lines(svg, stations_by_line, repos, repo_data, station_xs, station_ys)
+
+    const height = svg.getAttribute('height')
+
+    for (let i = 0; i < distributed.length; i++) {
+      const line = document.createElementNS(SVGNS, 'path')
+      const x = x_pos(i)
+      line.setAttribute('d', `M ${x},0 L ${x},${height}`)
+      line.setAttribute('stroke', '#ccc')
+      svg.appendChild(line)
+    }
+
+    // const ao = Array.from(line_offsets.values())
+    // const maxo = ao.reduce((a, b) => a > b ? a : b)
+    // const mino = ao.reduce((a, b) => a < b ? a : b)
+    // const rect = document.createElementNS(SVGNS, 'rect')
+    // rect.setAttribute('x', x_pos(1).toString())
+    // rect.setAttribute('y', '0')
+    // rect.setAttribute('width', (maxo - mino).toString())
+    // rect.setAttribute('height', height!.toString())
+    // rect.setAttribute('fill', '#cccccc33')
+    // svg.appendChild(rect)
   })
