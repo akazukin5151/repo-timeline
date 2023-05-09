@@ -76,11 +76,13 @@ function y_pos(row_idx: number): number {
 }
 
 function x_pos(col_idx: number): number {
+  // TODO: starts at end of labels
   return 230 + col_idx * 60
 }
 
 function setup_svg(n_stations: number, n_lines: number): HTMLElement {
   const svg = document.getElementById('svg') as HTMLElement
+  // TODO: don't hardcode buffers
   svg.setAttribute('height', (y_pos(n_stations - 1) + 40).toString())
   svg.setAttribute('width', (x_pos(n_lines - 1) + 20).toString())
   return svg
