@@ -2,8 +2,8 @@ import { MULTIPLIER } from './constants'
 import { Repo, LineData } from './types'
 
 export function render_table(
-  distributed: Array<[string, LineData]>,
-  repos: Array<Repo>
+  distributed: ReadonlyArray<[string, LineData]>,
+  repos: ReadonlyArray<Repo>
 ) {
   const tbody = document.getElementById('tbody')!
   add_lang_cols(distributed)
@@ -15,7 +15,7 @@ export function render_table(
   }
 }
 
-function add_lang_cols(distributed: Array<[string, LineData]>): void {
+function add_lang_cols(distributed: ReadonlyArray<[string, LineData]>): void {
   const thead = document.getElementById('thead')!
   const row = document.createElement('tr')
   const th = document.createElement('th')
@@ -48,13 +48,13 @@ function add_repo_row(repo: Repo): HTMLTableRowElement {
 }
 
 function add_cols_for_row(
-  distributed: Array<[string, LineData]>,
+  distributed: ReadonlyArray<[string, LineData]>,
   repo: Repo,
   row: HTMLTableRowElement
 ) {
   let count = 0
   for (let col_idx = 0; col_idx < distributed.length; col_idx++) {
-    const [lang_col, data] = distributed[col_idx]
+    const [lang_col, data] = distributed[col_idx]!
     const td = document.createElement('td')
 
     for (const repo_lang of repo.languages.edges) {

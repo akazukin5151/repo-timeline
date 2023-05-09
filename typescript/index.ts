@@ -11,7 +11,7 @@ const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly = d3.curveCatmullRom.alph
 
 const SVGNS = 'http://www.w3.org/2000/svg'
 
-function restructure_data(repos: Array<Repo>): Map<string, LineData> {
+function restructure_data(repos: ReadonlyArray<Repo>): ReadonlyMap<string, LineData> {
   const line_data = new Map()
   for (let repo_idx = 0; repo_idx < repos.length; repo_idx++) {
     const repo = repos[repo_idx]!
@@ -39,8 +39,8 @@ function restructure_data(repos: Array<Repo>): Map<string, LineData> {
 // (even on the center/right, odd on the left. zero is even and is the only even
 // on the center)
 function distribute_lines(
-  sorted: Array<[string, LineData]>
-): Array<[string, LineData]> {
+  sorted: ReadonlyArray<[string, LineData]>
+): ReadonlyArray<[string, LineData]> {
   const distributed = []
   for (let i = 0; i < sorted.length; i++) {
     if (i % 2 === 0) {
@@ -70,7 +70,7 @@ function setup_svg(n_stations: number, n_lines: number): HTMLElement {
 }
 
 function find_station_x_pos_idx(
-  sorted: Array<[string, LineData]>,
+  sorted: ReadonlyArray<[string, LineData]>,
   repo: Repo
 ): number | undefined {
   // find the most frequent repo for this station
@@ -112,9 +112,9 @@ function draw_label(svg: HTMLElement, repo: Repo, y: number) {
 
 function draw_lines(
   svg: HTMLElement,
-  sorted: Array<[string, LineData]>,
-  station_xs: Array<number>,
-  station_ys: Array<number>
+  sorted: ReadonlyArray<[string, LineData]>,
+  station_xs: ReadonlyArray<number>,
+  station_ys: ReadonlyArray<number>
 ) {
   // iterate through every station in order of plot (every line -> every station on line)
   // add station to a map, values are x coord
@@ -146,8 +146,8 @@ function draw_line(
   svg: HTMLElement,
   line: string,
   data: LineData,
-  station_xs: Array<number>,
-  station_ys: Array<number>,
+  station_xs: ReadonlyArray<number>,
+  station_ys: ReadonlyArray<number>,
   coords: Map<number, number>,
   i: number
 ) {
