@@ -37,6 +37,7 @@ jobs:
     - name: Copy
       run: |
         cp index.html dist/
+        cp new.json dist/
         mkdir -p dist/dist/
         mv dist/bundle.js dist/dist/bundle.js
 
