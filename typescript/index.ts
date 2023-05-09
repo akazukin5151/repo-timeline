@@ -30,7 +30,7 @@ const RENDER_TABLE = false
 
 const SVGNS = 'http://www.w3.org/2000/svg'
 
-function collect_colors_and_count(repos: Array<Repo>): Map<string, RepoData> {
+function restructure_data(repos: Array<Repo>): Map<string, RepoData> {
   const repo_data = new Map() // given a lang, get the color
   for (let repo_idx = 0; repo_idx < repos.length; repo_idx++) {
     const repo = repos[repo_idx]
@@ -251,7 +251,7 @@ fetch('./new.json')
     const repos = j.data.user.repositories.nodes.filter(
       (repo) => repo.languages.edges.length > 0
     )
-    const repo_data = collect_colors_and_count(repos)
+    const repo_data = restructure_data(repos)
     const n_stations = repo_data.size
 
     const sorted = Array.from(repo_data)
