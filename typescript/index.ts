@@ -140,7 +140,6 @@ function draw_lines(
   svg: HTMLElement,
   sorted: Array<[string, LineData]>,
   repos: Array<Repo>,
-  line_data: Map<string, LineData>,
   station_xs: Array<number>,
   station_ys: Array<number>
 ) {
@@ -154,10 +153,9 @@ function draw_lines(
     if (stations.length <= 1) {
       continue
     }
-    const line_color = line_data.get(lang_name)!.color
     draw_line(
       svg,
-      line_color,
+      data.color,
       lang_name,
       stations,
       station_xs,
@@ -278,7 +276,7 @@ fetch('./new.json')
 
     draw_vertical_gridlines(svg, n_lines)
 
-    draw_lines(svg, sorted, repos, line_data, station_xs, station_ys)
+    draw_lines(svg, sorted, repos, station_xs, station_ys)
 
     if (RENDER_TABLE) {
       render_table(distributed, repos)
