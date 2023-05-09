@@ -299,10 +299,6 @@ fetch('./new.json')
       draw_label(svg, repo, y)
     }
 
-    if (RENDER_TABLE) {
-      render_table(distributed, repos)
-    }
-
     const stations_by_line = calc_stations_by_line(repos, sorted)
 
     const height = svg.getAttribute('height')
@@ -317,4 +313,7 @@ fetch('./new.json')
 
     draw_lines(svg, stations_by_line, repos, repo_data, station_xs, station_ys)
 
+    if (RENDER_TABLE) {
+      render_table(distributed, repos)
+    }
   })
