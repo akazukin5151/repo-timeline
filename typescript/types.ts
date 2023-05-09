@@ -1,32 +1,32 @@
 export type Schema = {
-  data: {
-    user: {
-      repositories: {
-        nodes: Array<Repo>
+  readonly data: {
+    readonly user: {
+      readonly repositories: {
+        readonly nodes: Array<Repo>
       }
     }
   }
 }
 
 export type Repo = {
-  name: string
-  createdAt: string
-  languages: {
-    edges: Array<Language>
+  readonly name: string
+  readonly createdAt: string
+  readonly languages: {
+    readonly edges: Array<Language>
   }
 }
 
 export type Language = {
-  size: number
-  node: {
-    color: string
-    name: string
+  readonly size: number
+  readonly node: {
+    readonly color: string
+    readonly name: string
   }
 }
 
 export type LineData = {
-  color: string
-  count: number
-  repo_idxs: Array<number>
-  repo_names: Array<string>
+  readonly color: string
+  readonly count: number
+  readonly repo_idxs: Array<number>
+  readonly repo_names: Array<string>
 }
