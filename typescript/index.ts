@@ -23,11 +23,12 @@
 // or at least, not cross the main trunk without an intersection
 import * as d3 from 'd3-shape'
 import { Repo, RepoData, Schema } from './types'
+import { MULTIPLIER } from './constants'
+import { render_table } from './table'
 
 const RENDER_TABLE = false
 
 const SVGNS = 'http://www.w3.org/2000/svg'
-const MULTIPLIER = 10
 
 function collect_colors_and_count(repos: Array<Repo>): Map<string, RepoData> {
   const repo_data = new Map()
@@ -61,30 +62,6 @@ function distribute_lines(
   return distributed
 }
 
-function add_lang_cols(distributed: Array<[string, RepoData]>): void {
-  const thead = document.getElementById('thead')!
-  const row = document.createElement('tr')
-  const th = document.createElement('th')
-  row.appendChild(th)
-  for (const [lang, data] of distributed) {
-    const th = document.createElement('th')
-    th.innerText = lang
-    th.style.color = data.color
-    row.appendChild(th)
-  }
-  {
-    const th = document.createElement('th')
-    th.innerText = 'sum'
-    row.appendChild(th)
-  }
-  {
-    const th = document.createElement('th')
-    th.innerText = 'offsets'
-    row.appendChild(th)
-  }
-  thead.appendChild(row)
-}
-
 function y_pos(row_idx: number): number {
   return 20 + row_idx * 40
 }
@@ -101,14 +78,6 @@ function setup_svg(
   svg.setAttribute('height', (y_pos(repos.length - 1) + 40).toString())
   svg.setAttribute('width', (x_pos(distributed.length - 1) + 20).toString())
   return svg
-}
-
-function add_repo_row(repo: Repo): HTMLTableRowElement {
-  const row = document.createElement('tr')
-  const td = document.createElement('td')
-  td.innerText = repo.name
-  row.appendChild(td)
-  return row
 }
 
 function find_station_x_pos_idx(
@@ -163,50 +132,13 @@ function draw_label(svg: HTMLElement, repo: Repo, y: number) {
   svg.appendChild(line)
 }
 
-function add_cols_for_row(
-  distributed: Array<[string, RepoData]>,
-  repo: Repo,
-  row: HTMLTableRowElement
-) {
-  let count = 0
-  for (let col_idx = 0; col_idx < distributed.length; col_idx++) {
-    const [lang_col, data] = distributed[col_idx]
-    const td = document.createElement('td')
-
-    for (const repo_lang of repo.languages.edges) {
-      if (repo_lang.node.name === lang_col) {
-        count += 1
-        td.innerText = 'x'
-        td.style.color = data.color
-        break
-      }
-    }
-    row.appendChild(td)
-  }
-  {
-    const td = document.createElement('td')
-    td.innerText = count.toString()
-    row.appendChild(td)
-  }
-  {
-    const td = document.createElement('td')
-    let text = ''
-    for (let i = 0; i < count; i++) {
-      const offset = calc_offset(i)
-      text += offset.toString() + ', '
-    }
-    td.innerText = text
-    row.appendChild(td)
-  }
-}
-
 function calc_stations_by_line(
   repos: Array<Repo>,
-  distributed: Array<[string, RepoData]>
+  sorted: Array<[string, RepoData]>
 ): Map<string, Array<number>> {
   const stations_by_line = new Map()
   // for every line
-  for (const [lang_name, _] of distributed) {
+  for (const [lang_name, _] of sorted) {
     for (let repo_idx = 0; repo_idx < repos.length; repo_idx++) {
       const repo = repos[repo_idx]
       for (const lang of repo.languages.edges) {
@@ -223,15 +155,6 @@ function calc_stations_by_line(
     }
   }
   return stations_by_line
-}
-
-// offset a station's position, if there are already n stations on the row
-// only used for table
-function calc_offset(nth_station: number): number {
-  if (nth_station % 2 === 0) {
-    return nth_station * MULTIPLIER
-  }
-  return -nth_station * MULTIPLIER
 }
 
 function draw_lines(
@@ -345,7 +268,6 @@ function draw_station(
 fetch('./new.json')
   .then((response) => response.json())
   .then((j: Schema) => {
-    const tbody = document.getElementById('tbody')!
     const repos = j.data.user.repositories.nodes.filter(
       (repo) => repo.languages.edges.length > 0
     )
@@ -356,16 +278,11 @@ fetch('./new.json')
       .sort(([_, a], [__, b]) => b.count - a.count)
     const distributed = distribute_lines(sorted)
 
-    if (RENDER_TABLE) {
-      add_lang_cols(distributed)
-    }
-
     const svg = setup_svg(repos, distributed)
 
     const station_xs = []
     const station_ys = []
 
-    // add repos rows and indicate their languages in the columns
     for (let row_idx = 0; row_idx < repos.length; row_idx++) {
       const repo = repos[row_idx]
 
@@ -379,15 +296,13 @@ fetch('./new.json')
       const y = y_pos(row_idx)
       station_ys.push(y)
       draw_label(svg, repo, y)
-
-      if (RENDER_TABLE) {
-        const row = add_repo_row(repo)
-        add_cols_for_row(distributed, repo, row)
-        tbody.appendChild(row)
-      }
     }
 
-    const stations_by_line = calc_stations_by_line(repos, distributed)
+    if (RENDER_TABLE) {
+      render_table(distributed, repos)
+    }
+
+    const stations_by_line = calc_stations_by_line(repos, sorted)
 
     const height = svg.getAttribute('height')
 
