@@ -1,0 +1,24 @@
+query {
+  user(login: "akazukin5151") {
+    repositories(
+      ownerAffiliations: OWNER
+      isFork: false
+      first: 100
+      privacy: PUBLIC
+    ) {
+      nodes {
+        name
+        createdAt
+        languages(first: 10, orderBy: { field: SIZE, direction: DESC }) {
+          edges {
+            size
+            node {
+              color
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}
