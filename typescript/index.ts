@@ -5,13 +5,16 @@ import { render_table } from './table'
 
 const LINEAR: boolean = false
 const RENDER_TABLE: boolean = false
-const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly = d3.curveCatmullRom.alpha(0.5)
+const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly =
+  d3.curveCatmullRom.alpha(0.5)
 // d3.curveCardinal.tension(0.5)
 // d3.curveBumpY
 
 const SVGNS = 'http://www.w3.org/2000/svg'
 
-function restructure_data(repos: ReadonlyArray<Repo>): ReadonlyMap<string, LineData> {
+function restructure_data(
+  repos: ReadonlyArray<Repo>
+): ReadonlyMap<string, LineData> {
   const line_data = new Map()
   for (let repo_idx = 0; repo_idx < repos.length; repo_idx++) {
     const repo = repos[repo_idx]!
@@ -172,7 +175,14 @@ function draw_line(
   svg.appendChild(path)
 
   for (let i = 0; i < data.repo_idxs.length; i++) {
-    draw_station(svg, xy[i]![0], xy[i]![1], data.repo_names[i]!, line, data.color)
+    draw_station(
+      svg,
+      xy[i]![0],
+      xy[i]![1],
+      data.repo_names[i]!,
+      line,
+      data.color
+    )
   }
 }
 
