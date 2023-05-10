@@ -112,7 +112,9 @@ function find_station_x_pos_idx(
 }
 
 function draw_label(width: number, repo: Repo, y: number): [string, string] {
-  const t = `<text x="10" y="${y - 5}" class="label">${repo.name}</text>`
+  const title_text = repo.languages.edges.map(lang => lang.node.name).join('\n')
+  const title = `<title>${title_text}</title>`
+  const t = `<text x="10" y="${y - 5}" class="label">${repo.name}${title}</text>`
   const l = `<path d="M 10 ${y} L ${width} ${y}" class="gridline"></path>`
   return [t, l]
 }
