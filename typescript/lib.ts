@@ -3,7 +3,6 @@ import { Repo, LineData, Schema, Options } from './types.js'
 import { MULTIPLIER } from './constants.js'
 import { render_table } from './table.js'
 
-const LINEAR: boolean = false
 const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly =
   d3.curveCatmullRom.alpha(0.5)
 d3.curveCardinal.tension(0.5)
@@ -120,6 +119,7 @@ function draw_label(width: number, repo: Repo, y: number): [string, string] {
 }
 
 async function draw_lines(
+  options: Options,
   sorted: ReadonlyArray<[string, LineData]>,
   station_xs: ReadonlyArray<number>,
   station_ys: ReadonlyArray<number>
@@ -136,7 +136,7 @@ async function draw_lines(
     if (stations.length <= 1) {
       continue
     }
-    res += await draw_line(lang_name, data, station_xs, station_ys, coords, i)
+    res += await draw_line(options, lang_name, data, station_xs, station_ys, coords, i)
     i += 1
   }
   return res
@@ -153,6 +153,7 @@ function calc_offset(entry: number | undefined): number {
 }
 
 async function draw_line(
+  options: Options,
   line: string,
   data: LineData,
   station_xs: ReadonlyArray<number>,
@@ -165,7 +166,7 @@ async function draw_line(
     const entry = coords.get(station)
     const offset = calc_offset(entry)
     coords.set(station, offset)
-    const x = LINEAR ? x_pos(i) : station_xs[station]! + offset
+    const x = options.linear ? x_pos(i) : station_xs[station]! + offset
     const y = station_ys[station]!
     xy.push([x, y])
   }
@@ -231,7 +232,7 @@ export async function main(j: Schema, options: Options): Promise<string> {
 
   body = body.concat(...draw_vertical_gridlines(height, n_lines))
 
-  body += await draw_lines(LINEAR ? distributed : sorted, station_xs, station_ys)
+  body += await draw_lines(options, options.linear ? distributed : sorted, station_xs, station_ys)
 
   if (options.render_table) {
     return render_table(distributed, repos)

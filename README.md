@@ -9,6 +9,7 @@ There are two routes, `/api` and `/api/table`
 ### SVG metro map
 
 - `username`: the username of the GitHub user. If missing, defaults to `akazukin5151`
+- `linear`: whether the "map" should just be a linear chain of stations. Looks like the table with connected lines. Only a value of `true` will enable this (ie, not `True` or `1`)
 
 **Examples:**
 

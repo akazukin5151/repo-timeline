@@ -33,7 +33,7 @@ export type LineData = {
 
 export type Options = {
   readonly render_table: boolean
-  //readonly linear: boolean
+  readonly linear: boolean
 }
 
 // const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly =
