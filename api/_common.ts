@@ -2,23 +2,17 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
 import { main } from '../typescript/lib.js'
 import { FALLBACK } from '../typescript/fallback.js'
+import { Options } from '../typescript/types.js';
 
-// const LINEAR: boolean = false
-// const RENDER_TABLE: boolean = false
-// const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly =
-//   d3.curveCatmullRom.alpha(0.5)
-// // d3.curveCardinal.tension(0.5)
-// // d3.curveBumpY
-
-export default async function(request: VercelRequest, response: VercelResponse, should_render_table: boolean) {
+export default async function(request: VercelRequest, response: VercelResponse, options: Options) {
   const username = request.query['username']
   const token = process.env['PAT_1']
 
-  const content_type = should_render_table ? 'text/html' : 'image/svg+xml'
+  const content_type = options.render_table ? 'text/html' : 'image/svg+xml'
 
   // null or undefined
   if (username == null || token == null) {
-    const svg = await main(FALLBACK, should_render_table)
+    const svg = await main(FALLBACK, options)
     response.setHeader("Content-Type", content_type);
     response.send(svg);
     return
@@ -71,7 +65,7 @@ export default async function(request: VercelRequest, response: VercelResponse, 
     console.log(res.data.errors)
   }
 
-  const svg = await main(res.data, should_render_table)
+  const svg = await main(res.data, options)
   response.setHeader("Content-Type", content_type);
   response.send(svg);
 }

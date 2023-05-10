@@ -1,5 +1,5 @@
 import * as d3 from 'd3-shape'
-import { Repo, LineData, Schema } from './types.js'
+import { Repo, LineData, Schema, Options } from './types.js'
 import { MULTIPLIER } from './constants.js'
 import { render_table } from './table.js'
 
@@ -200,7 +200,7 @@ function draw_station(
   return c
 }
 
-export async function main(j: Schema, should_render_table: boolean): Promise<string> {
+export async function main(j: Schema, options: Options): Promise<string> {
   const repos = j.data.user.repositories.nodes.filter(
     (repo) => repo.languages.edges.length > 0
   )
@@ -233,7 +233,7 @@ export async function main(j: Schema, should_render_table: boolean): Promise<str
 
   body += await draw_lines(LINEAR ? distributed : sorted, station_xs, station_ys)
 
-  if (should_render_table) {
+  if (options.render_table) {
     return render_table(distributed, repos)
   }
   return build_svg(width, height, body)

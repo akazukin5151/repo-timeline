@@ -30,3 +30,13 @@ export type LineData = {
   readonly repo_idxs: Array<number>
   readonly repo_names: Array<string>
 }
+
+export type Options = {
+  readonly render_table: boolean
+  //readonly linear: boolean
+}
+
+// const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly =
+//   d3.curveCatmullRom.alpha(0.5)
+// // d3.curveCardinal.tension(0.5)
+// // d3.curveBumpY
