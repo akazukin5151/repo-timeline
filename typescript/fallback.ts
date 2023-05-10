@@ -927,7 +927,7 @@ export const FALLBACK = {
             languages: {
               edges: [
                 {
-                  size: 7583,
+                  size: 7568,
                   node: {
                     color: '#e34c26',
                     name: 'HTML',
@@ -977,6 +977,21 @@ export const FALLBACK = {
             createdAt: '2023-01-09T20:46:12Z',
             languages: {
               edges: [],
+            },
+          },
+          {
+            name: 'repo-timeline',
+            createdAt: '2023-05-09T14:08:46Z',
+            languages: {
+              edges: [
+                {
+                  size: 37481,
+                  node: {
+                    color: '#3178c6',
+                    name: 'TypeScript',
+                  },
+                },
+              ],
             },
           },
         ],
