@@ -122,32 +122,42 @@ function draw_label(width: number, repo: Repo, y: number): [string, string] {
   return [t, l]
 }
 
-async function draw_lines(
-  options: Options,
-  sorted: ReadonlyArray<[string, LineData]>,
-  station_xs: ReadonlyArray<number>,
-  station_ys: ReadonlyArray<number>
-): Promise<string> {
-  // iterate through every station in order of plot (every line -> every station on line)
-  // add station to a map, values are x coord
-  // if station is already in the map, add an offset to the xcoord
-  const coords: Map<number, number> = new Map()
-
-  let i = 0
+function draw_lines(
+  all_stations: Map<string, Array<[number, number]>>,
+  sorted: ReadonlyArray<[string, LineData]>
+): string {
   let res = ''
   for (const [lang_name, data] of sorted) {
     const stations = data.repo_idxs
     if (stations.length <= 1) {
       continue
     }
-    res += await draw_line(
-      options,
+    res += draw_line(all_stations.get(lang_name)!, lang_name, data)
+  }
+  return res
+}
+
+function calc_all_stations(
+  options: Options,
+  sorted: ReadonlyArray<[string, LineData]>,
+  station_xs: ReadonlyArray<number>,
+  station_ys: ReadonlyArray<number>
+): Map<string, Array<[number, number]>> {
+  // iterate through every station in order of plot (every line -> every station on line)
+  // add station to a map, values are x coord
+  // if station is already in the map, add an offset to the xcoord
+  const coords: Map<number, number> = new Map()
+
+  let i = 0
+  const res = new Map()
+  for (const [lang_name, data] of sorted) {
+    const stations = data.repo_idxs
+    if (stations.length <= 1) {
+      continue
+    }
+    res.set(
       lang_name,
-      data,
-      station_xs,
-      station_ys,
-      coords,
-      i
+      calc_stations_on_line(options, data, station_xs, station_ys, coords, i)
     )
     i += 1
   }
@@ -164,15 +174,14 @@ function calc_offset(entry: number | undefined): number {
   }
 }
 
-async function draw_line(
+function calc_stations_on_line(
   options: Options,
-  line: string,
   data: LineData,
   station_xs: ReadonlyArray<number>,
   station_ys: ReadonlyArray<number>,
   coords: Map<number, number>,
   i: number
-): Promise<string> {
+): Array<[number, number]> {
   const xy: Array<[number, number]> = []
   for (const station of data.repo_idxs) {
     const entry = coords.get(station)
@@ -182,7 +191,14 @@ async function draw_line(
     const y = station_ys[station]!
     xy.push([x, y])
   }
+  return xy
+}
 
+function draw_line(
+  xy: Array<[number, number]>,
+  line: string,
+  data: LineData
+): string {
   const t = `<title>${line}</title>`
 
   const d = d3.line().curve(CURVE)(xy)!
@@ -238,12 +254,14 @@ export async function main(j: Schema, options: Options): Promise<string> {
 
   body = body.concat(...draw_vertical_gridlines(height, n_lines))
 
-  body += await draw_lines(
+  const all_stations = calc_all_stations(
     options,
     options.linear ? distributed : sorted,
     station_xs,
     station_ys
   )
+
+  body += draw_lines(all_stations, options.linear ? distributed : sorted)
 
   if (options.render_table) {
     return render_table(distributed, repos)
