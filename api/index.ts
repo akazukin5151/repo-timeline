@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
 import { main } from '../typescript/lib.js'
-import { FALLBACK } from './_fallback.js'
+import { FALLBACK } from '../typescript/fallback.js'
 
 // const LINEAR: boolean = false
 // const RENDER_TABLE: boolean = false
