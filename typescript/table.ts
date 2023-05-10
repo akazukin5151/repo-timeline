@@ -5,83 +5,75 @@ export function render_table(
   distributed: ReadonlyArray<[string, LineData]>,
   repos: ReadonlyArray<Repo>
 ) {
-  const tbody = document.getElementById('tbody')!
-  add_lang_cols(distributed)
+  const thead = add_lang_cols(distributed)
+  let body = ''
   for (const repo of repos) {
     // add repos rows and indicate their languages in the columns
-    const row = add_repo_row(repo)
-    add_cols_for_row(distributed, repo, row)
-    tbody.appendChild(row)
+    let row = `<td>${repo.name}</td>`
+    row += add_cols_for_row(distributed, repo)
+    body += `<tr>${row}</tr>`
   }
+
+  return `
+<!DOCTYPE html>
+<head> </head>
+
+<style>
+  * {
+    font-family: sans-serif;
+  }
+</style>
+
+<body>
+  <table>
+    ${thead}
+    <tbody id="tbody">${body}</tbody>
+</body>
+  `
 }
 
-function add_lang_cols(distributed: ReadonlyArray<[string, LineData]>): void {
-  const thead = document.getElementById('thead')!
-  const row = document.createElement('tr')
-  const th = document.createElement('th')
-  row.appendChild(th)
+function add_lang_cols(distributed: ReadonlyArray<[string, LineData]>): string {
+  let res = ''
+  res += '<th></th>'
   for (const [lang, data] of distributed) {
-    const th = document.createElement('th')
-    th.innerText = lang
-    th.style.color = data.color
-    row.appendChild(th)
+    res += `<th style="color: ${data.color}">${lang}</th>`
   }
-  {
-    const th = document.createElement('th')
-    th.innerText = 'sum'
-    row.appendChild(th)
-  }
-  {
-    const th = document.createElement('th')
-    th.innerText = 'offsets'
-    row.appendChild(th)
-  }
-  thead.appendChild(row)
+  res += '<th>sum</th>'
+  res += '<th>offsets</th>'
+  return `<thead id="thead">${res}</thead>`
 }
 
-function add_repo_row(repo: Repo): HTMLTableRowElement {
-  const row = document.createElement('tr')
-  const td = document.createElement('td')
-  td.innerText = repo.name
-  row.appendChild(td)
-  return row
+function make_cell(lang_col: string, data: LineData, repo: Repo, count: number): [string, number] {
+  for (const repo_lang of repo.languages.edges) {
+    if (repo_lang.node.name === lang_col) {
+      return [`<td style="color: ${data.color}">x</td>`, count + 1]
+    }
+  }
+  return ['<td></td>', count]
 }
 
 function add_cols_for_row(
   distributed: ReadonlyArray<[string, LineData]>,
   repo: Repo,
-  row: HTMLTableRowElement
-) {
+): string {
+  let row = ''
   let count = 0
   for (let col_idx = 0; col_idx < distributed.length; col_idx++) {
     const [lang_col, data] = distributed[col_idx]!
-    const td = document.createElement('td')
+    const x = make_cell(lang_col, data, repo, count)
+    count = x[1]
+    row += x[0]
+  }
+  row += `<td>${count}</td>`
 
-    for (const repo_lang of repo.languages.edges) {
-      if (repo_lang.node.name === lang_col) {
-        count += 1
-        td.innerText = 'x'
-        td.style.color = data.color
-        break
-      }
-    }
-    row.appendChild(td)
+  let text = ''
+  for (let i = 0; i < count; i++) {
+    const offset = calc_offset(i)
+    text += offset.toString() + ', '
   }
-  {
-    const td = document.createElement('td')
-    td.innerText = count.toString()
-    row.appendChild(td)
-  }
-  {
-    const td = document.createElement('td')
-    let text = ''
-    for (let i = 0; i < count; i++) {
-      const offset = calc_offset(i)
-      text += offset.toString() + ', '
-    }
-    td.innerText = text
-    row.appendChild(td)
-  }
+  row += `<td>${text}</td>`
+
+  return row
 }
 
 // offset a station's position, if there are already n stations on the row

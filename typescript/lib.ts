@@ -4,7 +4,6 @@ import { MULTIPLIER } from './constants.js'
 import { render_table } from './table.js'
 
 const LINEAR: boolean = false
-const RENDER_TABLE: boolean = false
 const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly =
   d3.curveCatmullRom.alpha(0.5)
 d3.curveCardinal.tension(0.5)
@@ -199,7 +198,7 @@ function draw_station(
   return c
 }
 
-export async function main(j: Schema): Promise<string> {
+export async function main(j: Schema, should_render_table: boolean): Promise<string> {
   const repos = j.data.user.repositories.nodes.filter(
     (repo) => repo.languages.edges.length > 0
   )
@@ -232,10 +231,9 @@ export async function main(j: Schema): Promise<string> {
 
   body += await draw_lines(LINEAR ? distributed : sorted, station_xs, station_ys)
 
-  if (RENDER_TABLE) {
-    render_table(distributed, repos)
+  if (should_render_table) {
+    return render_table(distributed, repos)
   }
-
   return build_svg(width, height, body)
 }
 
