@@ -1,5 +1,5 @@
-import { MULTIPLIER } from './constants'
-import { Repo, LineData } from './types'
+import { MULTIPLIER } from './constants.js'
+import { Repo, LineData } from './types.js'
 
 export function render_table(
   distributed: ReadonlyArray<[string, LineData]>,

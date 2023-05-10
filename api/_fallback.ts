@@ -1,4 +1,4 @@
-{
+export const FALLBACK = {
   "data": {
     "user": {
       "repositories": {

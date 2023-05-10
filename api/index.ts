@@ -1,5 +1,75 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import axios from 'axios';
+import { main } from '../typescript/lib.js'
+import { FALLBACK } from './_fallback.js'
 
-export default function (request: VercelRequest, response: VercelResponse) {
-  response.send(request.query);
+// const LINEAR: boolean = false
+// const RENDER_TABLE: boolean = false
+// const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly =
+//   d3.curveCatmullRom.alpha(0.5)
+// // d3.curveCardinal.tension(0.5)
+// // d3.curveBumpY
+
+export default async function(request: VercelRequest, response: VercelResponse) {
+  const username = request.query['username']
+  const token = process.env['PAT_1']
+  // null or undefined
+  if (username == null || token == null) {
+    const svg = await main(FALLBACK)
+    response.setHeader("Content-Type", "image/svg+xml");
+    response.send(svg);
+    return
+  }
+
+  const variables = { login: username }
+
+  const data = {
+    query: `
+      query userInfo($login: String!) {
+        user(login: $login) {
+          repositories(
+            ownerAffiliations: OWNER
+            isFork: false
+            first: 100
+            privacy: PUBLIC
+          ) {
+            nodes {
+              name
+              createdAt
+              languages(first: 10, orderBy: { field: SIZE, direction: DESC }) {
+                edges {
+                  size
+                  node {
+                    color
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      `,
+    variables,
+  }
+
+  const headers = {
+    Authorization: `bearer ${token}`,
+  }
+
+  const res = await axios({
+    url: "https://api.github.com/graphql",
+    method: "post",
+    headers,
+    data,
+  })
+
+  if (res.data.errors !== undefined) {
+    console.log(res.data.errors)
+  }
+
+  const svg = await main(res.data)
+  response.setHeader("Content-Type", "image/svg+xml");
+  response.send(svg);
 }
+
