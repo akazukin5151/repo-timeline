@@ -20,6 +20,7 @@
     "@vercel/node": "^2.14.1",
     "prettier": "2.8.8",
     "ts-loader": "^9.4.2",
+    "vercel": "^29.1.1",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1"
   },
