@@ -13,9 +13,13 @@ There are two routes, `/api` and `/api/table`
 
 **Examples:**
 
+`http://repo-timeline-five.vercel.app/api`
+
 `http://repo-timeline-five.vercel.app/api?username=akazukin5151`
 
 `http://repo-timeline-five.vercel.app/api?username=anuraghazra`
+
+`http://repo-timeline-five.vercel.app/api?username=anuraghazra&linear=true`
 
 ### HTML table (for debugging)
 
