@@ -1,10 +1,14 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import axios from 'axios';
+import type { VercelRequest, VercelResponse } from '@vercel/node'
+import axios from 'axios'
 import { main } from '../typescript/lib.js'
 import { FALLBACK } from '../typescript/fallback.js'
-import { Options } from '../typescript/types.js';
+import { Options } from '../typescript/types.js'
 
-export default async function(request: VercelRequest, response: VercelResponse, options: Options) {
+export default async function (
+  request: VercelRequest,
+  response: VercelResponse,
+  options: Options
+) {
   const username = request.query['username']
   const token = process.env['PAT_1']
 
@@ -13,8 +17,8 @@ export default async function(request: VercelRequest, response: VercelResponse, 
   // null or undefined
   if (username == null || token == null) {
     const svg = await main(FALLBACK, options)
-    response.setHeader("Content-Type", content_type);
-    response.send(svg);
+    response.setHeader('Content-Type', content_type)
+    response.send(svg)
     return
   }
 
@@ -55,8 +59,8 @@ export default async function(request: VercelRequest, response: VercelResponse, 
   }
 
   const res = await axios({
-    url: "https://api.github.com/graphql",
-    method: "post",
+    url: 'https://api.github.com/graphql',
+    method: 'post',
     headers,
     data,
   })
@@ -66,7 +70,6 @@ export default async function(request: VercelRequest, response: VercelResponse, 
   }
 
   const svg = await main(res.data, options)
-  response.setHeader("Content-Type", content_type);
-  response.send(svg);
+  response.setHeader('Content-Type', content_type)
+  response.send(svg)
 }
-

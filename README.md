@@ -45,4 +45,3 @@ Anurag Hazra for the fantastic [github-readme-stats](https://github.com/anuragha
 ## License
 
 AGPL v3 or later
-

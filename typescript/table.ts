@@ -43,7 +43,12 @@ function add_lang_cols(distributed: ReadonlyArray<[string, LineData]>): string {
   return `<thead id="thead">${res}</thead>`
 }
 
-function make_cell(lang_col: string, data: LineData, repo: Repo, count: number): [string, number] {
+function make_cell(
+  lang_col: string,
+  data: LineData,
+  repo: Repo,
+  count: number
+): [string, number] {
   for (const repo_lang of repo.languages.edges) {
     if (repo_lang.node.name === lang_col) {
       return [`<td style="color: ${data.color}">x</td>`, count + 1]
@@ -54,7 +59,7 @@ function make_cell(lang_col: string, data: LineData, repo: Repo, count: number):
 
 function add_cols_for_row(
   distributed: ReadonlyArray<[string, LineData]>,
-  repo: Repo,
+  repo: Repo
 ): string {
   let row = ''
   let count = 0

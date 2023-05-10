@@ -111,9 +111,13 @@ function find_station_x_pos_idx(
 }
 
 function draw_label(width: number, repo: Repo, y: number): [string, string] {
-  const title_text = repo.languages.edges.map(lang => lang.node.name).join('\n')
+  const title_text = repo.languages.edges
+    .map((lang) => lang.node.name)
+    .join('\n')
   const title = `<title>${title_text}</title>`
-  const t = `<text x="10" y="${y - 5}" class="label">${repo.name}${title}</text>`
+  const t = `<text x="10" y="${y - 5}" class="label">${
+    repo.name
+  }${title}</text>`
   const l = `<path d="M 10 ${y} L ${width} ${y}" class="gridline"></path>`
   return [t, l]
 }
@@ -136,7 +140,15 @@ async function draw_lines(
     if (stations.length <= 1) {
       continue
     }
-    res += await draw_line(options, lang_name, data, station_xs, station_ys, coords, i)
+    res += await draw_line(
+      options,
+      lang_name,
+      data,
+      station_xs,
+      station_ys,
+      coords,
+      i
+    )
     i += 1
   }
   return res
@@ -177,13 +189,7 @@ async function draw_line(
   const p = `<path d="${d}" stroke="${data.color}" class="line">${t}</path>`
 
   const stations_body = data.repo_idxs.map((_, i) =>
-    draw_station(
-      xy[i]![0],
-      xy[i]![1],
-      data.repo_names[i]!,
-      line,
-      data.color
-    )
+    draw_station(xy[i]![0], xy[i]![1], data.repo_names[i]!, line, data.color)
   )
   return p.concat(...stations_body)
 }
@@ -232,7 +238,12 @@ export async function main(j: Schema, options: Options): Promise<string> {
 
   body = body.concat(...draw_vertical_gridlines(height, n_lines))
 
-  body += await draw_lines(options, options.linear ? distributed : sorted, station_xs, station_ys)
+  body += await draw_lines(
+    options,
+    options.linear ? distributed : sorted,
+    station_xs,
+    station_ys
+  )
 
   if (options.render_table) {
     return render_table(distributed, repos)
@@ -240,7 +251,10 @@ export async function main(j: Schema, options: Options): Promise<string> {
   return build_svg(width, height, body)
 }
 
-function draw_vertical_gridlines(height: number, n_lines: number): Array<string> {
+function draw_vertical_gridlines(
+  height: number,
+  n_lines: number
+): Array<string> {
   const res = []
   for (let i = 0; i < n_lines; i++) {
     const x = x_pos(i)
