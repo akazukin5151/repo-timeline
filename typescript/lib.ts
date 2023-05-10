@@ -185,7 +185,7 @@ async function draw_line(
 
   const t = `<title>${line}</title>`
 
-  const d = d3.line().curve(d3.curveCatmullRom.alpha(0.5))(xy)!
+  const d = d3.line().curve(CURVE)(xy)!
   const p = `<path d="${d}" stroke="${data.color}" class="line">${t}</path>`
 
   const stations_body = data.repo_idxs.map((_, i) =>
