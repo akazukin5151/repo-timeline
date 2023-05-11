@@ -3,7 +3,7 @@ import { Repo, LineData } from './types.js'
 
 export function render_table(
   distributed: ReadonlyArray<[string, LineData]>,
-  repos: ReadonlyArray<Repo>
+  repos: ReadonlyArray<Repo>,
 ) {
   const thead = add_lang_cols(distributed)
   let body = ''
@@ -47,7 +47,7 @@ function make_cell(
   lang_col: string,
   data: LineData,
   repo: Repo,
-  count: number
+  count: number,
 ): [string, number] {
   for (const repo_lang of repo.languages.edges) {
     if (repo_lang.node.name === lang_col) {
@@ -59,7 +59,7 @@ function make_cell(
 
 function add_cols_for_row(
   distributed: ReadonlyArray<[string, LineData]>,
-  repo: Repo
+  repo: Repo,
 ): string {
   let row = ''
   let count = 0
