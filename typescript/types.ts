@@ -1,3 +1,5 @@
+export type NamedPoint = [string, number, number]
+
 export type Schema = {
   readonly data: {
     readonly user: {
