@@ -3,7 +3,7 @@ import _common from './_common.js'
 
 export default async function (
   request: VercelRequest,
-  response: VercelResponse
+  response: VercelResponse,
 ) {
   return _common(request, response, {
     render_table: false,

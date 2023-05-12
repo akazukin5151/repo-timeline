@@ -16,6 +16,7 @@ at least, can also turn the portfolio into a timeline based one, with work and p
 - english text is not really good for vertical japanese text
 
 # problem
+
 we can't assign station positions before drawing the lines
 as we need to know if the lines intersect
 but drawing the lines requires connecting through stations first,
@@ -39,6 +40,7 @@ and we actually want some crossing to make the map interesting, otherwise it wil
 we should limit the maximum number of crossings to 1 (or 2?). every line should only cross the trunk once.
 
 # other criteria
+
 starting and ending stations should never cross the trunk
 this means the first two stations and the last two stations should be on the same side
 

@@ -287,7 +287,7 @@ function* permutations<T>(
 // these are the four possible shapes involving 0s:
 //
 //   A        B        C        D
-// 
+//
 //   O o    o O        o O     O o
 //   |/      \|       /  |     |  \
 //   |        |      /   |     |   \
@@ -317,10 +317,10 @@ function* permutations<T>(
 // 0s need special handling (platforms are always distinct and never have 0s)
 //
 // line dir\first platform on ___ of second | L | R
-// L0                                       | C | A
-// R0                                       | B | D
-// 0L                                       | A | C
-// 0R                                       | D | B
+// L,0                                      | C | A
+// R,0                                      | B | D
+// 0,L                                      | A | C
+// 0,R                                      | D | B
 function fix_crossing_at_start(
   all_stations: Map<string, Array<NamedPoint>>,
   repos: Array<Repo>,
@@ -349,30 +349,71 @@ function fix_crossing_at_start(
         const l1_dir_from = l1_second[1] - l1_first[1]
         const l2_dir_from = l2_second[1] - l2_first[1]
         if (Math.sign(l1_dir_from) === Math.sign(l2_dir_from)) {
+          // the lines are L,L (//) or R,R (\\)
           continue
         }
-        // the lines are LL (//) or RR (\\)
 
         // if we need to move right from 1 to 2, then 1 is on the left
         // so we need to do l1_first - l2_first
         // "we need to move left from 2 to 1, so 1 is on the left"
         const station_dir = l1_first[1] - l2_first[1]
         if (Math.sign(l1_dir_from) === Math.sign(station_dir)) {
-          // line dir is LR and station dir is LR, or
-          // RL and RL respectively
+          // line dir is L,R and station dir is L,R, or
+          // R,L and R,L respectively
           continue
         }
         // line dir and station dir must be opposites
-        // either LR and RL, or RL and LR
+        // either L,R and R,L, or R,L and L,R
         // or 0s
-        // teddit nav has 0s
-        // filter out C and D
 
-        console.log(repo)
-        console.log(l1.node.name)
-        console.log(l2.node.name)
-        console.log(l1_dir_from)
-        console.log(station_dir)
+        // || is fine
+        if (l1_dir_from === 0 && l2_dir_from === 0) {
+          continue
+        }
+
+        // filter out C and D
+        // L,0 and L, R,0 and D, 0,L and R, 0,R and L
+
+        // 0,L and R
+        // 0,R and L
+        // if l1_dir_from is 0, l2_dir_from can't be zero in this branch
+        // so if l2_dir_from has a different sign from station_dir,
+        // they're either L and R or R and L
+        if (
+          l1_dir_from === 0 &&
+          Math.sign(l2_dir_from) !== Math.sign(station_dir)
+        ) {
+          continue
+        }
+
+        // L,0 and L
+        // R,0 and R
+        // if l2_dir_from is 0, l1_dir_from can't be zero in this branch
+        // so if l1_dir_from has the same sign from station_dir,
+        // they're either L and L or R and R
+        if (
+          l2_dir_from === 0 &&
+          Math.sign(l1_dir_from) === Math.sign(station_dir)
+        ) {
+          continue
+        }
+
+        // move the right (second) platform to the left
+        // (arbitrary choice)
+        // TODO: copied
+        for (const line of repo.languages.edges) {
+          const line_stations = all_stations.get(line.node.name)
+          if (!line_stations) {
+            continue
+          }
+          // get their platform for this station
+          const other_platform = line_stations.find((x) => x[0] === repo.name)
+          if (other_platform && other_platform[1] !== l2_first[1]) {
+            while (l2_first[1] >= other_platform[1]) {
+              l2_first[1] -= MULTIPLIER
+            }
+          }
+        }
       }
     }
   }
