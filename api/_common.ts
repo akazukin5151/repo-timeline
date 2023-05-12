@@ -7,7 +7,7 @@ import { Options } from '../typescript/types.js'
 export default async function (
   request: VercelRequest,
   response: VercelResponse,
-  options: Options
+  options: Options,
 ) {
   const username = request.query['username']
   const token = process.env['PAT_1']
