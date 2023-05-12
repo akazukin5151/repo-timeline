@@ -135,26 +135,27 @@ function move_station(station: NamedPoint, diff: number) {
 // 3:   /   O
 //     o
 //
-// first, a line moves to direction A from station 1 to 2
-// then it moves to direction B from 2 to 3
+// in this example, a line moves to direction L from station 1 to 2
+// then it moves to direction R from 2 to 3
 //
-// l1/l2 | AA       | AB       | BA       | BB
-// AA    | parallel | split    | merge    | x shape
-// AB    | split    | parallel | x shape  | merge
-// BA    | merge    | x shape  | parallel | split
-// BB    | x shape  | merge    | split    | parallel
+// l1\l2 | LL       | LR       | RL       | RR
+// LL    | parallel | split    | merge    | x shape
+// LR    | split    | parallel | x shape  | merge
+// RL    | merge    | x shape  | parallel | split
+// RR    | x shape  | merge    | split    | parallel
 //
-// AA/BB and BB/AA is actually fine because ideally they would be one single station
+// LL/RR and RR/LL is actually fine because ideally they would be one
+// single station
 // and the two lines would meet at that singular station and then split
-// so the x shapes in this table that needs to be fixed are BA/AB and AB/BA
+// so the x shapes in this table that needs to be fixed are RL/LR and LR/RL
 //
 // things get more complicated when there are vertical lines (direction 0)
 //
-// l1/l2 | 0A       | 0B       | A0       | B0
-// 0A    | parallel | split    | x shape  | ʞ shape
-// 0B    | split    | parallel | k shape  | x shape
-// A0    | x shape  | k shape  | parallel | merge
-// B0    | ʞ shape  | x shape  | merge    | parallel
+// l1\l2 | 0L       | 0R       | L0       | R0
+// 0L    | parallel | split    | x shape  | ʞ shape
+// 0R    | split    | parallel | k shape  | x shape
+// L0    | x shape  | k shape  | parallel | merge
+// R0    | ʞ shape  | x shape  | merge    | parallel
 //
 // the k and mirrored k (ʞ) shapes are probably fine
 // so all x shapes in this table needs to be fixed
@@ -194,7 +195,7 @@ function fix_x_shape(
       if (Math.sign(l1_dir_from) === Math.sign(l1_dir_to)) {
         continue
       }
-      // l1 is AB or BA
+      // l1 is LR or RL
 
       const l2_station = stations2[idx2]!
       const l2_dir_from = l2_station[1] - before2[1]
@@ -202,15 +203,15 @@ function fix_x_shape(
       if (Math.sign(l2_dir_from) === Math.sign(l2_dir_to)) {
         continue
       }
-      // l2 is AB or BA
+      // l2 is LR or RL
 
       if (Math.sign(l1_dir_from) === Math.sign(l2_dir_from)) {
         continue
       }
-      // l1 and l2 are opposing (either AB and BA or BA and AB)
+      // l1 and l2 are opposing (either LR and RL or RL and LR)
 
       // ignore k shapes and mirrored k (ʞ) shapes
-      // 0B A0 and 0A B0 both mean:
+      // 0R L0 and 0L R0 both mean:
       // - l1_from and l2_to are 0
       // - l1_to and l2_from are different
       if (
@@ -220,7 +221,7 @@ function fix_x_shape(
       ) {
         continue
       }
-      // if l1 is A, l2 must be B (and vice versa)
+      // if l1 is L, l2 must be R (and vice versa)
       // therefore the departing directions must be opposites as well
       // as we have already checked that l1 and l2 have different directions
 
@@ -276,12 +277,50 @@ function* permutations<T>(
 
 // fix platforms that start at the same station and then immediately
 // cross
+// this only looks at the first and second stations
 //
-// shapes like \\, //, and /\ are fine
+// l1\l2 | L       | R                | 0
+// L     | //      | x or /\          | /|
+// R     | x or /\ | \\               | |\
+// 0     | /| or ł | |\ or ł flipped  | ||
+//
+// these are the four possible shapes involving 0s:
+//
+//   A        B        C        D
+// 
+//   O o    o O        o O     O o
+//   |/      \|       /  |     |  \
+//   |        |      /   |     |   \
+//  /|        |\    /    |     |    \
+//
+// shapes like \\, //, /\, and || are fine
+// C and D are fine
 // shapes like x are not
-// html and js is /\, nim and go is /\
-// nim and rust is x, html and ts is x
-// only look at initial stations
+// A and B are not
+//
+// we can't distinguish between x or /\ with only
+// direction-from-first-station information
+// we need the position of the platforms
+//
+// we also need that to distinguish between the four possible shapes
+// involving 0s
+//
+// "L,R" means the first platform has a line to the left and the second
+// has a line to the right.
+// if the first platform is on the right of the second,
+// its line going left must intersect with the other line going right
+//
+// line dir\first platform on ___ of second | L  | R
+// L,R                                      | /\ | x
+// R,L                                      | x  | /\
+//
+// 0s need special handling (platforms are always distinct and never have 0s)
+//
+// line dir\first platform on ___ of second | L | R
+// L0                                       | C | A
+// R0                                       | B | D
+// 0L                                       | A | C
+// 0R                                       | D | B
 function fix_crossing_at_start(
   all_stations: Map<string, Array<NamedPoint>>,
   repos: Array<Repo>,
@@ -294,30 +333,46 @@ function fix_crossing_at_start(
       return stations_on_line && stations_on_line[0]![0] === repo.name
     })
     if (lines.length > 1) {
-      // limit ourselves to the first two lines for now...
       for (const [l1, l2] of permutations(lines)) {
         if (!l1 || !l2) {
           continue
         }
         // we've already filtered out lines that aren't in all_stations
-        const stations1 = all_stations.get(l1.node.name)!
-        const stations2 = all_stations.get(l2.node.name)!
+        const l1_stations = all_stations.get(l1.node.name)!
+        const l2_stations = all_stations.get(l2.node.name)!
 
-        const first1 = stations1[0]!
-        const second1 = stations1[1]!
-        const first2 = stations2[0]!
-        const second2 = stations2[1]!
+        const l1_first = l1_stations[0]!
+        const l1_second = l1_stations[1]!
+        const l2_first = l2_stations[0]!
+        const l2_second = l2_stations[1]!
 
-        const diff1 = second1[1] - first1[1]
-        const diff2 = second2[1] - first2[1]
-        // teddit nav has 0s
-        if (Math.sign(diff1) !== Math.sign(diff2)) {
-          console.log(repo)
-          console.log(l1)
-          console.log(l2)
-          console.log(stations1)
-          console.log(stations2)
+        const l1_dir_from = l1_second[1] - l1_first[1]
+        const l2_dir_from = l2_second[1] - l2_first[1]
+        if (Math.sign(l1_dir_from) === Math.sign(l2_dir_from)) {
+          continue
         }
+        // the lines are LL (//) or RR (\\)
+
+        // if we need to move right from 1 to 2, then 1 is on the left
+        // so we need to do l1_first - l2_first
+        // "we need to move left from 2 to 1, so 1 is on the left"
+        const station_dir = l1_first[1] - l2_first[1]
+        if (Math.sign(l1_dir_from) === Math.sign(station_dir)) {
+          // line dir is LR and station dir is LR, or
+          // RL and RL respectively
+          continue
+        }
+        // line dir and station dir must be opposites
+        // either LR and RL, or RL and LR
+        // or 0s
+        // teddit nav has 0s
+        // filter out C and D
+
+        console.log(repo)
+        console.log(l1.node.name)
+        console.log(l2.node.name)
+        console.log(l1_dir_from)
+        console.log(station_dir)
       }
     }
   }
