@@ -396,7 +396,9 @@ function fix_crossing_at_start(
         }
 
         // move the right (second) platform to the left
-        // (arbitrary choice)
+        // (arbitrary choice, but probs away from trunk
+        // ie, if station platform on the left of trunk, move to left
+        // if on right of trunk, move to right)
         // TODO: copied
         for (const line of repo.languages.edges) {
           const line_stations = all_stations.get(line.node.name)
