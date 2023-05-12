@@ -245,7 +245,6 @@ function fix_x_shape(
           // move l1_station, ensuring it doesn't overlap with the platform
           // there's no reason why we can't move l2_station instead...
           if (other_platform && other_platform[1] !== l1_station[1]) {
-            // console.log(l1_station[0], l1.node.name, l2.node.name)
             if (station_diff < 0) {
               // s1 is on right, move to left
               while (l1_station[1] >= other_platform[1]) {
@@ -324,7 +323,6 @@ function fix_crossing_at_start(
   all_stations: Map<string, Array<NamedPoint>>,
   repos: Array<Repo>,
 ) {
-  console.log('======== start ============')
   for (const repo of repos) {
     // lines whose first station is this station
     const lines = repo.languages.edges.filter((lang) => {
