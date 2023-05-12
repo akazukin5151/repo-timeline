@@ -4,10 +4,12 @@ import { MULTIPLIER } from './constants.js'
 import { render_table } from './table.js'
 import { improve_lines } from './improve.js'
 
-const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly =
-  d3.curveCatmullRom.alpha(0.5)
-d3.curveCardinal.tension(0.5)
-d3.curveBumpY
+const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly = d3.curveBumpY
+
+// d3.curveCatmullRom.alpha(0.5)
+// d3.curveBumpY
+// d3.curveCardinal.tension(0.5)
+// d3.curveLinear
 
 function restructure_data(
   repos: ReadonlyArray<Repo>,
