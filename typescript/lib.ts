@@ -62,9 +62,10 @@ function y_pos(row_idx: number): number {
   return 20 + row_idx * 40
 }
 
-function x_pos(col_idx: number): number {
+function x_pos(col_idx: number, options: Options): number {
+  const multiplier = options.linear ? 20 : 60
   // TODO: starts at end of labels
-  return 230 + col_idx * 60
+  return 230 + col_idx * multiplier
 }
 
 function build_svg(width: number, height: number, body: string): string {
@@ -195,7 +196,9 @@ function calc_stations_on_line(
     const entry = coords.get(station)
     const offset = calc_offset(entry)
     coords.set(station, offset)
-    const x = options.linear ? x_pos(i) : station_xs[station]![1] + offset
+    const x = options.linear
+      ? x_pos(i, options)
+      : station_xs[station]![1] + offset
     const y = station_ys[station]![1]
     const name = station_xs[station]![0]
     xy.push([name, x, y])
@@ -247,21 +250,21 @@ export async function main(j: Schema, options: Options): Promise<string> {
 
   let body = ''
   const height = y_pos(n_stations - 1) + 40
-  const width = x_pos(n_lines - 1) + 20
+  const width = x_pos(n_lines - 1, options) + 20
 
   const station_xs: Array<[string, number]> = []
   const station_ys: Array<[string, number]> = []
 
   repos.forEach((repo, row_idx) => {
     const station_col_idx = find_station_x_pos_idx(sorted, repo!)!
-    station_xs.push([repo.name, x_pos(station_col_idx)])
+    station_xs.push([repo.name, x_pos(station_col_idx, options)])
 
     const y = y_pos(row_idx)
     station_ys.push([repo.name, y])
     body = body.concat(...draw_label(width, repo!, y))
   })
 
-  body = body.concat(...draw_vertical_gridlines(height, n_lines))
+  body = body.concat(...draw_vertical_gridlines(height, n_lines, options))
 
   const all_stations = calc_all_stations(
     options,
@@ -283,10 +286,11 @@ export async function main(j: Schema, options: Options): Promise<string> {
 function draw_vertical_gridlines(
   height: number,
   n_lines: number,
+  options: Options
 ): Array<string> {
   const res = []
   for (let i = 0; i < n_lines; i++) {
-    const x = x_pos(i)
+    const x = x_pos(i, options)
     const l = `<path d="M ${x},0 L ${x},${height}" class="gridline"></path>`
     res.push(l)
   }
