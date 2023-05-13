@@ -14,7 +14,7 @@ const CURVE: d3.CurveFactory | d3.CurveFactoryLineOnly = d3.curveBumpY
 function restructure_data(
   repos: ReadonlyArray<Repo>,
 ): ReadonlyMap<string, LineData> {
-  const line_data = new Map()
+  const line_data: Map<string, LineData> = new Map()
   repos.forEach((repo, repo_idx) => {
     for (const lang of repo.languages.edges) {
       const lang_name = lang.node.name
@@ -33,6 +33,11 @@ function restructure_data(
       }
     }
   })
+  for (const [l, data] of line_data) {
+    if (data.count <= 1) {
+      line_data.delete(l)
+    }
+  }
   return line_data
 }
 
