@@ -28,7 +28,7 @@ export type Language = {
 
 export type LineData = {
   readonly color: string
-  readonly count: number
+  count: number
   readonly repo_idxs: Array<number>
   readonly repo_names: Array<string>
 }
