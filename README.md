@@ -27,7 +27,7 @@ There are two routes, `/api` and `/api/table`
 
 **Examples:**
 
-`http://repo-timeline-five.vercel.app/api?username=akazukin5151`
+`http://repo-timeline-five.vercel.app/api/table?username=akazukin5151`
 
 `http://repo-timeline-five.vercel.app/api/table?username=anuraghazra`
 
